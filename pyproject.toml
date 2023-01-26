@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "dddantic"
+version = "0.1.0"
+description = "Library for advanced architectures/patterns in modern Python. Domain-Driven Design (DDD), CQRS, Event Sourcing, Event-driven architectures, message queues, unit of work and more."
+authors = ["Carlo Casorzo <carlo@deepblu.dev>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
