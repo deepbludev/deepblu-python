@@ -21,6 +21,7 @@ line_length = 88
 [tool.poetry.dependencies]
 python = "^3.11"
 poethepoet = "^0.18.1"
+pre-commit = "^3.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
