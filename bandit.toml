@@ -1,0 +1,2 @@
+[bandit]
+  skips =  ['*_test.py', 'test_*.py']
