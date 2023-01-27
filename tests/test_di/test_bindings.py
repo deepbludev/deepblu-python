@@ -32,14 +32,12 @@ def bind_all() -> None:
 
 
 def test_bind_and_get_with_class(bind_all: None) -> None:
-    impl = di.get(DummyInterface)
-    instance = impl()
-    assert impl == DummyImpl
+    instance = di.get(DummyInterface)
+    assert isinstance(instance, DummyImpl)
     assert instance.foo() == "foo"
 
 
 def test_bind_and_get_with_factory(bind_all: None) -> None:
-    impl = di.get(OtherDummyInterface)
-    instance = impl()
-    assert impl == dummy_factory
+    instance = di.get(OtherDummyInterface)
+    assert isinstance(instance, OtherDummyInterface)
     assert instance.bar() == "bar"

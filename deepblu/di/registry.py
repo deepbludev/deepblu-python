@@ -30,3 +30,8 @@ class ProviderRegistry:
 
     def __getitem__(self, interface: TProvider[TValue]) -> TProvider[TValue]:
         return self.get(interface)
+
+    @property
+    def bindings(self) -> dict[AnyProvider, AnyProvider]:
+        """Get current bindings"""
+        return self.__bindings__
