@@ -1,5 +1,8 @@
 [tool.poetry]
 name = "deepblu"
+packages = [
+    { include = "deepblu" },
+]
 version = "0.1.0"
 description = "Library for advanced architectures/patterns in modern Python. Domain-Driven Design (DDD), CQRS, Event Sourcing, Event-driven architectures, message queues, unit of work dependency injection and more."
 authors = ["Carlo Casorzo <carlo@deepblu.dev>"]
