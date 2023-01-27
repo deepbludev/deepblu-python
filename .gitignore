@@ -3,11 +3,13 @@
 .vscode
 __pycache__
 .pytest_cache
+.pyc
 .env
 logs
 tmp
 
 # Unit test / coverage reports
+tests/__pycache__
 htmlcov/
 .tox/
 .coverage
@@ -18,3 +20,4 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+codecov

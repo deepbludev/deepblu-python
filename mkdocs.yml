@@ -8,12 +8,7 @@ watch:
 
 plugins:
   - search
-  - mkdocstrings:
-
-
-
-
+  - mkdocstrings
 
 nav:
   - Index: index.md
-  - Dependency Injection: di.md
