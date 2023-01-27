@@ -1,0 +1,19 @@
+site_name: deepblu
+
+theme:
+  name: material
+
+watch:
+  - deepblu
+
+plugins:
+  - search
+  - mkdocstrings:
+
+
+
+
+
+nav:
+  - Index: index.md
+  - Dependency Injection: di.md
