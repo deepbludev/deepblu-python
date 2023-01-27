@@ -6,7 +6,7 @@ Library for advanced architectures/patterns in modern Python.
 Domain-Driven Design (DDD), CQRS, Event Sourcing, Event-driven architectures, message queues, unit of work, dependency injection and more.
 """
 
-from di import hello_di
+from .di import hello_di
 
 __version__ = "0.1.0"
 
