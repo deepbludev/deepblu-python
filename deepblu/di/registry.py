@@ -1,9 +1,9 @@
 from typing import Any, Callable, TypeVar
 
 TValue = TypeVar("TValue")
-TProvider = Callable[..., TValue]
-AnyProvider = TProvider[Any]
-TBinding = tuple[TProvider[TValue], TProvider[TValue]]
+Provider = Callable[..., TValue]
+AnyProvider = Provider[Any]
+Binding = tuple[Provider[TValue], Provider[TValue]]
 AnyBinding = tuple[AnyProvider, AnyProvider]
 
 
@@ -15,20 +15,20 @@ class ProviderRegistry:
         self.__bindings__ = {}
 
     def bind(  # type: ignore
-        self, interface: TProvider[TValue], impl=TProvider[TValue]  # type: ignore
+        self, interface: Provider[TValue], impl=Provider[TValue]  # type: ignore
     ) -> "ProviderRegistry":
         self.__bindings__[interface] = impl
         return self
 
     def __setitem__(
-        self, interface: TProvider[TValue], impl: TProvider[TValue]
+        self, interface: Provider[TValue], impl: Provider[TValue]
     ) -> "ProviderRegistry":
         return self.bind(interface, impl)
 
-    def get(self, interface: TProvider[TValue]) -> TProvider[TValue]:
+    def get(self, interface: Provider[TValue]) -> Provider[TValue]:
         return self.__bindings__[interface]
 
-    def __getitem__(self, interface: TProvider[TValue]) -> TProvider[TValue]:
+    def __getitem__(self, interface: Provider[TValue]) -> Provider[TValue]:
         return self.get(interface)
 
     @property

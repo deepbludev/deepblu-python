@@ -184,8 +184,8 @@ from typing import Any, Callable
 from deepblu.di.registry import (
     AnyBinding,
     AnyProvider,
+    Provider,
     ProviderRegistry,
-    TProvider,
     TValue,
 )
 
@@ -194,7 +194,7 @@ __all__ = ["bind", "bind_all", "get", "inject"]
 registry = ProviderRegistry()
 
 
-def bind(interface: TProvider[TValue], impl: TProvider[TValue]) -> None:
+def bind(interface: Provider[TValue], impl: Provider[TValue]) -> None:
     """Bind an interface to an implementation.
 
     Args:
@@ -208,7 +208,7 @@ def bind(interface: TProvider[TValue], impl: TProvider[TValue]) -> None:
     registry[interface] = impl
 
 
-def add(provider: TProvider[TValue]) -> None:
+def add(provider: Provider[TValue]) -> None:
     """Add a provider to the registry.
 
     Args:
@@ -237,7 +237,7 @@ def bind_all(*providers: AnyBinding | AnyProvider) -> None:
         bind(interface, impl)
 
 
-def get(interface: TProvider[TValue]) -> TValue:
+def get(interface: Provider[TValue]) -> TValue:
     """Get the implementation for an interface.
 
     Args:
@@ -253,7 +253,7 @@ def get(interface: TProvider[TValue]) -> TValue:
     return registry[interface]()
 
 
-def inject(func: TProvider[TValue]) -> Callable[..., TValue]:
+def inject(func: Provider[TValue]) -> Callable[..., TValue]:
     """Inject dependencies into a function class init.
 
     Args:
