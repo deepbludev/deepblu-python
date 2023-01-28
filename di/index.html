@@ -389,11 +389,14 @@ class CreateUser(UseCase[CreateUserRequest, User]):
 UseCaseFn = Callable[[TUseCaseRequest], Awaitable[TUseCaseResult]]
 
 
-def create_user_usecase() -&gt; UseCaseFn[CreateUserRequest, User]:
-    async def create_user(dto: CreateUserRequest) -&gt; User:
-        return User(**dto.dict())
+@di.inject
+def create_user_usecase(repo: Repo[User]) -&gt; UseCaseFn[CreateUserRequest, User]:
+    async def run(dto: CreateUserRequest) -&gt; User:
+        user = User(**dto.dict())
+        await repo.save(user)
+        return user
 
-    return create_user
+    return run
 
 
 class UserService:
@@ -456,7 +459,7 @@ create_user = CreateUser() # or di.get(CreateUser)
 user = await create_user.run(CreateUserRequest(id=&quot;1&quot;, name=&quot;John&quot;))
 assert user.name == &quot;John&quot;
 
-create_user_fn = di.get(create_user_usecase)
+create_user_fn = create_user_usecase() # or di.get(create_user_usecase)
 user = await create_user_fn(CreateUserRequest(id=&quot;1&quot;, name=&quot;John&quot;))
 assert user.name == &quot;John&quot;
 
@@ -502,7 +505,7 @@ assert user.name == &quot;John&quot;
         <tr>
           <td><code>provider</code></td>
           <td>
-                <code><span title="deepblu.di.registry.TProvider">TProvider</span>[<span title="deepblu.di.registry.TValue">TValue</span>]</code>
+                <code><span title="deepblu.di.registry.Provider">Provider</span>[<span title="deepblu.di.registry.TValue">TValue</span>]</code>
           </td>
           <td><p>The provider to add to the registry, bound to itself.</p></td>
           <td>
@@ -518,16 +521,16 @@ assert user.name == &quot;John&quot;
 
       <details class="quote">
         <summary>Source code in <code>deepblu/di/__init__.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">211</span>
 <span class="normal">212</span>
 <span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
-<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">provider</span><span class="p">:</span> <span class="n">TProvider</span><span class="p">[</span><span class="n">TValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">provider</span><span class="p">:</span> <span class="n">Provider</span><span class="p">[</span><span class="n">TValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a provider to the registry.</span>
 
 <span class="sd">    Args:</span>
@@ -571,7 +574,7 @@ assert user.name == &quot;John&quot;
         <tr>
           <td><code>interface</code></td>
           <td>
-                <code><span title="deepblu.di.registry.TProvider">TProvider</span>[<span title="deepblu.di.registry.TValue">TValue</span>]</code>
+                <code><span title="deepblu.di.registry.Provider">Provider</span>[<span title="deepblu.di.registry.TValue">TValue</span>]</code>
           </td>
           <td><p>The interface to bind.</p></td>
           <td>
@@ -581,7 +584,7 @@ assert user.name == &quot;John&quot;
         <tr>
           <td><code>impl</code></td>
           <td>
-                <code><span title="deepblu.di.registry.TProvider">TProvider</span>[<span title="deepblu.di.registry.TValue">TValue</span>]</code>
+                <code><span title="deepblu.di.registry.Provider">Provider</span>[<span title="deepblu.di.registry.TValue">TValue</span>]</code>
           </td>
           <td><p>The implementation to bind to the given interface.</p></td>
           <td>
@@ -598,10 +601,7 @@ assert user.name == &quot;John&quot;
 
       <details class="quote">
         <summary>Source code in <code>deepblu/di/__init__.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
 <span class="normal">198</span>
 <span class="normal">199</span>
 <span class="normal">200</span>
@@ -609,7 +609,10 @@ assert user.name == &quot;John&quot;
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
-<span class="normal">205</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">bind</span><span class="p">(</span><span class="n">interface</span><span class="p">:</span> <span class="n">TProvider</span><span class="p">[</span><span class="n">TValue</span><span class="p">],</span> <span class="n">impl</span><span class="p">:</span> <span class="n">TProvider</span><span class="p">[</span><span class="n">TValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">bind</span><span class="p">(</span><span class="n">interface</span><span class="p">:</span> <span class="n">Provider</span><span class="p">[</span><span class="n">TValue</span><span class="p">],</span> <span class="n">impl</span><span class="p">:</span> <span class="n">Provider</span><span class="p">[</span><span class="n">TValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Bind an interface to an implementation.</span>
 
 <span class="sd">    Args:</span>
@@ -671,10 +674,7 @@ assert user.name == &quot;John&quot;
 
       <details class="quote">
         <summary>Source code in <code>deepblu/di/__init__.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">223</span>
 <span class="normal">224</span>
 <span class="normal">225</span>
 <span class="normal">226</span>
@@ -685,7 +685,10 @@ assert user.name == &quot;John&quot;
 <span class="normal">231</span>
 <span class="normal">232</span>
 <span class="normal">233</span>
-<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">bind_all</span><span class="p">(</span><span class="o">*</span><span class="n">providers</span><span class="p">:</span> <span class="n">AnyBinding</span> <span class="o">|</span> <span class="n">AnyProvider</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">bind_all</span><span class="p">(</span><span class="o">*</span><span class="n">providers</span><span class="p">:</span> <span class="n">AnyBinding</span> <span class="o">|</span> <span class="n">AnyProvider</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Bind multiple interfaces to implementations.</span>
 
 <span class="sd">    Args:</span>
@@ -734,7 +737,7 @@ assert user.name == &quot;John&quot;
         <tr>
           <td><code>interface</code></td>
           <td>
-                <code><span title="deepblu.di.registry.TProvider">TProvider</span>[<span title="deepblu.di.registry.TValue">TValue</span>]</code>
+                <code><span title="deepblu.di.registry.Provider">Provider</span>[<span title="deepblu.di.registry.TValue">TValue</span>]</code>
           </td>
           <td><p>The interface to get the implementation instance for.</p></td>
           <td>
@@ -769,10 +772,7 @@ assert user.name == &quot;John&quot;
 
       <details class="quote">
         <summary>Source code in <code>deepblu/di/__init__.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">240</span>
 <span class="normal">241</span>
 <span class="normal">242</span>
 <span class="normal">243</span>
@@ -782,7 +782,10 @@ assert user.name == &quot;John&quot;
 <span class="normal">247</span>
 <span class="normal">248</span>
 <span class="normal">249</span>
-<span class="normal">250</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">interface</span><span class="p">:</span> <span class="n">TProvider</span><span class="p">[</span><span class="n">TValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TValue</span><span class="p">:</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">interface</span><span class="p">:</span> <span class="n">Provider</span><span class="p">[</span><span class="n">TValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TValue</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the implementation for an interface.</span>
 
 <span class="sd">    Args:</span>
@@ -841,10 +844,7 @@ assert user.name == &quot;John&quot;
 
       <details class="quote">
         <summary>Source code in <code>deepblu/di/__init__.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">256</span>
 <span class="normal">257</span>
 <span class="normal">258</span>
 <span class="normal">259</span>
@@ -857,7 +857,10 @@ assert user.name == &quot;John&quot;
 <span class="normal">266</span>
 <span class="normal">267</span>
 <span class="normal">268</span>
-<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">inject</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">TProvider</span><span class="p">[</span><span class="n">TValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">TValue</span><span class="p">]:</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">inject</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Provider</span><span class="p">[</span><span class="n">TValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">TValue</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Inject dependencies into a function class init.</span>
 
 <span class="sd">    Args:</span>
