@@ -100,11 +100,14 @@ Basic Usage:
     UseCaseFn = Callable[[TUseCaseRequest], Awaitable[TUseCaseResult]]
 
 
-    def create_user_usecase() -> UseCaseFn[CreateUserRequest, User]:
-        async def create_user(dto: CreateUserRequest) -> User:
-            return User(**dto.dict())
+    @di.inject
+    def create_user_usecase(repo: Repo[User]) -> UseCaseFn[CreateUserRequest, User]:
+        async def run(dto: CreateUserRequest) -> User:
+            user = User(**dto.dict())
+            await repo.save(user)
+            return user
 
-        return create_user
+        return run
 
 
     class UserService:
@@ -167,7 +170,7 @@ Basic Usage:
     user = await create_user.run(CreateUserRequest(id="1", name="John"))
     assert user.name == "John"
 
-    create_user_fn = di.get(create_user_usecase)
+    create_user_fn = create_user_usecase() # or di.get(create_user_usecase)
     user = await create_user_fn(CreateUserRequest(id="1", name="John"))
     assert user.name == "John"
 
