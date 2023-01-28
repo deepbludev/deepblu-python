@@ -175,14 +175,6 @@ Basic Usage:
 """
 
 from .injection import add, bind, bind_all, get, inject
-from .registry import (
-    AnyBinding,
-    AnyProvider,
-    Binding,
-    Provider,
-    ProviderRegistry,
-    TValue,
-)
 
 __all__ = [
     "add",
@@ -190,10 +182,4 @@ __all__ = [
     "bind_all",
     "get",
     "inject",
-    "AnyBinding",
-    "AnyProvider",
-    "Binding",
-    "Provider",
-    "ProviderRegistry",
-    "TValue",
 ]
