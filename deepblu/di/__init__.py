@@ -1,7 +1,4 @@
 """
-Dependency Injection
-======================
-
 This module provides a simple dependency injection framework, based on a registry of bindings between interfaces and their
 implementations. Interfaces are classes (typically abstract) and implementations are concrete subclasses or
 factory functions that return a value of the same type as the Interface.
@@ -41,7 +38,7 @@ Basic Usage:
     >>> other_dummy_instance.bar()
     "bar"
     ```
-    More advanced usage:
+    **More advanced example:**
     ```python
     class User:
     def __init__(self, id: str, name: str) -> None:

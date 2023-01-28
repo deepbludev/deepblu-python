@@ -14,8 +14,8 @@ class ProviderRegistry:
     def __init__(self) -> None:
         self.__bindings__ = {}
 
-    def bind(  # type: ignore
-        self, interface: Provider[TValue], impl=Provider[TValue]  # type: ignore
+    def bind(
+        self, interface: Provider[TValue], impl: Provider[TValue]
     ) -> "ProviderRegistry":
         self.__bindings__[interface] = impl
         return self
