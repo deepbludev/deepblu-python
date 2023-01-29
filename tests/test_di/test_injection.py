@@ -18,25 +18,25 @@ from examples.di import (
 @pytest.fixture
 def bind_all() -> None:
     di.bind(APIKey, api_key_factory)
-    di.add(UserController)
+    di.add(UserService)
     di.bind_all(
         CreateUser,
         create_user_usecase,
-        UserService,
+        di.injectable(UserController),  # No decorator needed
         (Repo[User], UserSQLRepo),
     )
 
 
 @pytest.mark.asyncio
 async def test_inject(bind_all: None) -> None:
-    service = UserService()
+    service = UserService()  # type: ignore
     user = await service.get_user("1")
     assert user.name == "John"
 
     api_key = di.get(APIKey)
     assert api_key.key == "some-random-apikey"
 
-    ctrl = UserController()
+    ctrl = UserController()  # type: ignore
     user = await ctrl.get_user("1")
     assert user.name == "John"
     assert ctrl.api_key == "some-random-apikey"
@@ -52,7 +52,7 @@ async def test_inject(bind_all: None) -> None:
 
 @pytest.mark.asyncio
 async def test_manual_inject() -> None:
-    repo = UserSQLRepo()
-    create_user = CreateUser(repo=repo)
+    user_sql_repo = UserSQLRepo()
+    create_user = CreateUser(repo=user_sql_repo)
     user = await create_user.run(CreateUserRequest(id="1", name="John"))
     assert user.name == "John"

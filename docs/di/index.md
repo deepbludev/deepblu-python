@@ -8,41 +8,6 @@ factory functions that return a value of the same type as the Interface.
 ## Basic usage
 
 ```py title="Basic usage:" linenums="1"
-class DummyInterface(ABC):
-    def foo(self) -> str:
-        raise NotImplementedError
-
-
-class DummyImpl(DummyInterface):
-    def foo(self) -> str:
-        return "foo"
-
-
-class OtherDummyInterface:
-    def bar(self) -> str:
-        return "bar"
-
-
-def dummy_factory() -> OtherDummyInterface:
-    return OtherDummyInterface()
-
-
-di.bind(DummyInterface, DummyImpl)
-di.bind(OtherDummyInterface, dummy_factory)
-## Equivalent to:
-# di.bind_all((DummyInterface, DummyImpl), (OtherDummyInterface, dummy_factory))
-
-dummy_instance: DummyInterface = di.get(DummyInterface)
-other_dummy_instance: OtherDummyInterface = di.get(OtherDummyInterface)
-
->>> dummy_instance.foo()
-"foo"
-
->>> other_dummy_instance.bar()
-"bar"
-```
-
-```py title="More advanced example:" linenums="1"
 from abc import ABC, abstractmethod
 from typing import Awaitable, Callable, Generic, TypeVar
 
@@ -66,11 +31,11 @@ class CreateUserRequest(BaseModel):
 
 
 class Repo(Generic[E], ABC):
-    @abc.abstractmethod
+    @abstractmethod
     async def get(self, id: str) -> E:
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     async def save(self, entity: E) -> None:
         pass
 
@@ -89,7 +54,7 @@ TUseCaseRequest = TypeVar("TUseCaseRequest")
 
 
 class UseCase(Generic[TUseCaseRequest, TUseCaseResult], ABC):
-    @abc.abstractmethod
+    @abstractmethod
     async def run(self, dto: TUseCaseRequest) -> TUseCaseResult:
         pass
 
@@ -118,8 +83,8 @@ def create_user_usecase(repo: Repo[User]) -> UseCaseFn[CreateUserRequest, User]:
     return run
 
 
+@di.injectable
 class UserService:
-    @di.inject
     def __init__(self, repo: Repo[User], create_user_usecase: CreateUser) -> None:
         self.repo = repo
         self.create_user_usecase = create_user_usecase
@@ -145,8 +110,8 @@ def api_key_factory() -> APIKey:
     return APIKey("some-random-apikey")
 
 
+# No decorator needed
 class UserController:
-    @di.inject
     def __init__(self, service: UserService, api_key: APIKey) -> None:
         self.service = service
         self.api_key = api_key.key
@@ -158,28 +123,42 @@ class UserController:
         await self.service.save_user(user)
 
 
-di.bind_all(
+# Register bindings
+di.bind(APIKey, api_key_factory) #single binding
+di.add(UserService) # single binding when using same interface and implementation
+
+di.bind_all( # Simplest way to add bindings in bulk in main.py
     CreateUser,
     create_user_usecase,
-    UserService,
-    UserController,
-    (APIKey, api_key_factory)
+    di.injectable(UserController),  # No decorator needed
     (Repo[User], UserSQLRepo),
 )
 
+# See it in action
+service = UserService()  # type: ignore
+user = await service.get_user("1")
+assert user.name == "John"
 
-ctrl: UserController = UserController() # or di.get(UserController)
+api_key = di.get(APIKey)
+assert api_key.key == "some-random-apikey"
+
+ctrl = UserController()  # type: ignore
 user = await ctrl.get_user("1")
 assert user.name == "John"
-assert user.id == "1"
 assert ctrl.api_key == "some-random-apikey"
 
-create_user = CreateUser() # or di.get(CreateUser)
+create_user = CreateUser()
 user = await create_user.run(CreateUserRequest(id="1", name="John"))
 assert user.name == "John"
 
-create_user_fn = create_user_usecase() # or di.get(create_user_usecase)
+create_user_fn = create_user_usecase()
 user = await create_user_fn(CreateUserRequest(id="1", name="John"))
+assert user.name == "John"
+
+# You can also manually inject
+user_sql_repo = UserSQLRepo()
+create_user = CreateUser(repo=user_sql_repo)
+user = await create_user.run(CreateUserRequest(id="1", name="John"))
 assert user.name == "John"
 
 ```

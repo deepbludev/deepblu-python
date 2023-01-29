@@ -73,8 +73,8 @@ def create_user_usecase(repo: Repo[User]) -> UseCaseFn[CreateUserRequest, User]:
     return run
 
 
+@di.injectable
 class UserService:
-    @di.inject
     def __init__(self, repo: Repo[User], create_user_usecase: CreateUser) -> None:
         self.repo = repo
         self.create_user_usecase = create_user_usecase
@@ -100,8 +100,8 @@ def api_key_factory() -> APIKey:
     return APIKey("some-random-apikey")
 
 
+# No decorator needed
 class UserController:
-    @di.inject
     def __init__(self, service: UserService, api_key: APIKey) -> None:
         self.service = service
         self.api_key = api_key.key

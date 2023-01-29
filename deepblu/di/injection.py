@@ -10,21 +10,20 @@ from deepblu.di.registry import (
     TValue,
 )
 
-__all__ = ["bind", "bind_all", "get", "inject"]
-
 registry = ProviderRegistry()
 
 
 def bind(interface: Provider[TValue], impl: Provider[TValue]) -> None:
     """Bind an interface to an implementation.
 
-    Args:
-        interface: The interface to bind.
-        impl: The implementation to bind to the given interface.
+     Args:
+         interface: The interface to bind.
+         impl: The implementation to bind to the given interface.
 
-    Examples:
-        >>> di.bind(DummyInterface, DummyImpl)
-        >>> di.bind(OtherDummyInterface, dummy_factory)
+    ```py title="Example:" linenums="1"
+     di.bind(DummyInterface, DummyImpl)
+     di.bind(OtherDummyInterface, dummy_factory)
+    ```
     """
     registry[interface] = impl
 
@@ -35,8 +34,9 @@ def add(provider: Provider[TValue]) -> None:
     Args:
         provider: The provider to add to the registry, bound to itself.
 
-    Examples:
-        >>> di.add(DummyImpl)
+    ```py title="Example:" linenums="1"
+    di.add(DummyImpl)
+    ```
     """
     bind(provider, provider)
 
@@ -48,10 +48,11 @@ def bind_all(*providers: AnyBinding | AnyProvider) -> None:
         providers: A list of Binding tuples of the
         form ```(interface, implementation)```.
 
-    Examples:
-        >>> di.bind_all(
-                (DummyInterface, DummyImpl), (OtherDummyInterface, dummy_factory)
-            )
+    ```py title="Example:" linenums="1"
+    di.bind_all(
+        (DummyInterface, DummyImpl), (OtherDummyInterface, dummy_factory)
+    )
+    ```
     """
     for provider in providers:
         if isinstance(provider, tuple):
@@ -70,19 +71,29 @@ def get(interface: Provider[TValue]) -> TValue:
     Returns:
         The implementation instance for the given interface.
 
-    Examples:
-        >>> dummy_instance: DummyInterface = di.get(DummyInterface)
-        >>> other_dummy_instance: OtherDummyInterface = di.get(OtherDummyInterface)
+    ```py title="Example:" linenums="1"
+    dummy_instance: DummyInterface = di.get(DummyInterface)
+    other_dummy_instance: OtherDummyInterface = di.get(OtherDummyInterface)
+    ```
     """
     return registry[interface]
 
 
 def inject(func: Provider[TValue]) -> Callable[..., TValue]:
-    """Inject dependencies into a function or class `__init__`.
+    """Decorator to inject dependencies into a function or `__init__` method.
 
-    Args:
-        params: A dictionary of parameters to inject.
-        The keys are the names of the parameters and the values are the
+    ```py title="Example:" linenums="1"
+    class DummyClass:
+        @di.inject
+        def __init__(self, dummy: DummyInterface):
+            self.dummy = dummy
+    ```
+
+    ```py title="Example:" linenums="1"
+    @di.inject
+    def print_dummy(dummy: DummyInterface):
+        print(repr(dummy))
+    ```
     """
 
     @wraps(func)
@@ -94,3 +105,27 @@ def inject(func: Provider[TValue]) -> Callable[..., TValue]:
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def injectable(cls: Provider[TValue]) -> Provider[TValue]:
+    """Inject dependencies into a class `__init__`.
+
+    Args:
+        cls: The class to inject dependencies into.
+
+    ```py title="Example:" linenums="1"
+    @di.injectable
+    class DummyClass:
+        def __init__(self, dummy: DummyInterface):
+            self.dummy = dummy
+    ```
+    ```py title="Example:" linenums="1"
+    class DummyClass:
+        def __init__(self, dummy: DummyInterface):
+            self.dummy = dummy
+
+    di.add(di.injectable(DummyClass)) # avoids decorator syntax
+    ```
+    """
+    cls.__init__ = inject(cls.__init__)  # type: ignore
+    return cls

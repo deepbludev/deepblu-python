@@ -1,9 +1,3 @@
-from .injection import add, bind, bind_all, get, inject
+from .injection import add, bind, bind_all, get, inject, injectable, registry
 
-__all__ = [
-    "add",
-    "bind",
-    "bind_all",
-    "get",
-    "inject",
-]
+__all__ = ["add", "bind", "bind_all", "get", "inject", "injectable", "registry"]
