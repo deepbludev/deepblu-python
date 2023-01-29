@@ -2,6 +2,33 @@ site_name: deepblu
 
 theme:
   name: material
+  palette:
+  - media: '(prefers-color-scheme: light)'
+    scheme: default
+    primary: darkblue
+    accent: amber
+    toggle:
+      icon: material/lightbulb
+      name: Switch to light mode
+  - media: '(prefers-color-scheme: dark)'
+    scheme: slate
+    primary: darkblue
+    accent: amber
+    toggle:
+      icon: material/lightbulb-outline
+      name: Switch to dark mode
+  features:
+  - search.suggest
+  - search.highlight
+  - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github-alt
+  logo: img/icon-white.svg
+  favicon: img/favicon.png
+  language: en
+repo_name: deepbludev/deepblu-python
+repo_url: https://github.com/deepbludev/deepblu-python
+edit_uri: ''
 
 watch:
   - deepblu
@@ -9,7 +36,48 @@ watch:
 plugins:
   - search
   - mkdocstrings
+  - markdownextradata:
+      data: data
 
 nav:
   - Index: index.md
-  - Dependency Injection: di.md
+  - Dependency Injection:
+    - Basic Usage: di/index.md
+    - di/injection.md
+
+markdown_extensions:
+- toc:
+    permalink: true
+- markdown.extensions.codehilite:
+    guess_lang: false
+- mdx_include:
+    base_path: docs
+- admonition
+- codehilite
+- extra
+- pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+- pymdownx.tabbed:
+    alternate_style: true
+- attr_list
+- md_in_html
+extra:
+  analytics:
+    provider: google
+    property: UA-133183413-1
+  social:
+  - icon: fontawesome/brands/github-alt
+    link: https://github.com/deepbludev/deepblu-python
+  - icon: fontawesome/brands/twitter
+    link: https://twitter.com/deepbludev
+  - icon: fontawesome/brands/linkedin
+    link: https://www.linkedin.com/in/carlo-casorzo/
+  - icon: fontawesome/solid/globe
+    link: https://deepblu.dev
+extra_css:
+- css/termynal.css
+- css/custom.css
+extra_javascript:
+- js/termynal.js

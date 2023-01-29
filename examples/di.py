@@ -1,4 +1,4 @@
-import abc
+from abc import ABC, abstractmethod
 from typing import Awaitable, Callable, Generic, TypeVar
 
 from pydantic import BaseModel
@@ -20,12 +20,12 @@ class CreateUserRequest(BaseModel):
     name: str
 
 
-class Repo(Generic[E], metaclass=abc.ABCMeta):
-    @abc.abstractmethod
+class Repo(Generic[E], ABC):
+    @abstractmethod
     async def get(self, id: str) -> E:
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     async def save(self, entity: E) -> None:
         pass
 
@@ -43,8 +43,8 @@ TUseCaseResult = TypeVar("TUseCaseResult")
 TUseCaseRequest = TypeVar("TUseCaseRequest")
 
 
-class UseCase(Generic[TUseCaseRequest, TUseCaseResult], metaclass=abc.ABCMeta):
-    @abc.abstractmethod
+class UseCase(Generic[TUseCaseRequest, TUseCaseResult], ABC):
+    @abstractmethod
     async def run(self, dto: TUseCaseRequest) -> TUseCaseResult:
         pass
 

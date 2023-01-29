@@ -32,10 +32,15 @@ mypy = "^0.991"
 mkdocs = "^1.4.2"
 mkdocs-material = "^9.0.6"
 mkdocstrings = {extras = ["python"], version = "^0.20.0"}
+mdx-include = "^1.4.1"
+mkdocs-markdownextradata-plugin = "^0.1.7"
+pyyaml = "^5.3.1"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/deepbludev/deepblu-python/issues"
