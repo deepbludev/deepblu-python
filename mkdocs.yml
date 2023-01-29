@@ -43,7 +43,7 @@ nav:
   - Index: index.md
   - Dependency Injection:
     - Basic Usage: di/index.md
-    - di/injection.md
+    - API Reference: di/api-reference.md
 
 markdown_extensions:
 - toc:

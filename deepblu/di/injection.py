@@ -62,7 +62,7 @@ def bind_all(*providers: AnyBinding | AnyProvider) -> None:
 
 
 def get(interface: Provider[TValue]) -> TValue:
-    """Get the implementation for an interface.
+    """Get the implementation instance for an interface.
 
     Args:
         interface: The interface to get the implementation instance for.
@@ -74,11 +74,11 @@ def get(interface: Provider[TValue]) -> TValue:
         >>> dummy_instance: DummyInterface = di.get(DummyInterface)
         >>> other_dummy_instance: OtherDummyInterface = di.get(OtherDummyInterface)
     """
-    return registry[interface]()
+    return registry[interface]
 
 
 def inject(func: Provider[TValue]) -> Callable[..., TValue]:
-    """Inject dependencies into a function class init.
+    """Inject dependencies into a function or class `__init__`.
 
     Args:
         params: A dictionary of parameters to inject.
