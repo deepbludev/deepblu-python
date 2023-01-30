@@ -18,6 +18,7 @@ from examples.di import (
 )
 
 
+@di.module(providers=[di.injectable(UserController)])
 class DummyModule(di.Module):
     pass
 
@@ -33,7 +34,6 @@ class CQRSModule(di.Module):
 @di.module(
     submodules=[DummyModule],
     providers=[
-        di.injectable(UserController),
         di.provide_many(list[AnyUseCase], usecases),
         (Repo[User], UserSQLRepo),
         UserService,
@@ -51,8 +51,8 @@ class AppModule(di.Module):
 def test_module() -> None:
     dummy_module = DummyModule()
     assert di.Module is not None
-    assert DummyModule.providers == []
-    assert dummy_module.providers == []
+    assert DummyModule.providers == [UserController]
+    assert dummy_module.providers == [UserController]
 
 
 @pytest.fixture(scope="module")
@@ -66,8 +66,8 @@ def app_module() -> di.Module:
 
 
 def test_user_module(user_module: di.Module) -> None:
-    assert len(UserModule.providers) == 4
-    assert len(user_module.providers) == 4
+    assert len(UserModule.providers) == 3
+    assert len(user_module.providers) == 3
     assert UserModule.submodules == [DummyModule]
     assert user_module.submodules == [DummyModule]
 
