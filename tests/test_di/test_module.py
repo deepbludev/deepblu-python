@@ -25,25 +25,26 @@ class DummyModule(di.Module):
 usecases: list[Provider[AnyUseCase]] = [CreateUser, GetUser]
 
 
-@di.module(
-    providers=[
-        CommandBus,
-        di.provide_many(list[AnyUseCase], usecases),
-    ],
-)
+@di.module(providers=[CommandBus])
 class CQRSModule(di.Module):
     pass
 
 
 @di.module(
-    imports=[DummyModule, CQRSModule],
+    submodules=[DummyModule],
     providers=[
         di.injectable(UserController),
+        di.provide_many(list[AnyUseCase], usecases),
         (Repo[User], UserSQLRepo),
         UserService,
     ],
 )
 class UserModule(di.Module):
+    pass
+
+
+@di.module(submodules=[UserModule, CQRSModule])
+class AppModule(di.Module):
     pass
 
 
@@ -54,26 +55,34 @@ def test_module() -> None:
     assert dummy_module.providers == []
 
 
-@pytest.fixture
-def decorated_module() -> di.Module:
+@pytest.fixture(scope="module")
+def user_module() -> di.Module:
     return UserModule()
 
 
-def test_decorated_module(decorated_module: di.Module) -> None:
-    assert len(UserModule.providers) == 3
-    assert len(decorated_module.providers) == 3
-    assert UserModule.imports == [DummyModule, CQRSModule]
-    assert decorated_module.imports == [DummyModule, CQRSModule]
+@pytest.fixture(scope="module")
+def app_module() -> di.Module:
+    return AppModule()
+
+
+def test_user_module(user_module: di.Module) -> None:
+    assert len(UserModule.providers) == 4
+    assert len(user_module.providers) == 4
+    assert UserModule.submodules == [DummyModule]
+    assert user_module.submodules == [DummyModule]
 
 
 @pytest.mark.asyncio
-async def test_decorator_injects_providers(decorated_module: di.Module) -> None:
-    commandbus = CommandBus()
+async def test_decorator_injects_providers(
+    user_module: di.Module, app_module: di.Module
+) -> None:
+    commandbus = app_module.get(CommandBus)
     assert len(commandbus.usecases) == 2
+    assert app_module.submodules == [UserModule, CQRSModule]
 
     commandbus_create_user = cast(CreateUser, commandbus.usecases[0])
     user = await commandbus_create_user.run(CreateUserDTO(id="2", name="Jack"))
     assert user.name == "Jack"
 
     assert isinstance(di.get(UserController), UserController)
-    assert isinstance(decorated_module.get(UserController), UserController)
+    assert isinstance(user_module.get(UserController), UserController)

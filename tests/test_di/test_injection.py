@@ -20,7 +20,7 @@ from examples.di import (
 )
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def bind_all() -> None:
     di.bind(APIKey, api_key_factory)
     di.add(UserService)
