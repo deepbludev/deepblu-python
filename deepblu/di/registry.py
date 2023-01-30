@@ -27,11 +27,13 @@ class ProviderRegistry:
     ```
     """
 
-    __slots__ = "__bindings__"
+    __slots__ = ["__bindings__", "__instances__"]
     __bindings__: dict[AnyProvider, AnyProvider]
+    __instances__: dict[AnyProvider, Any]
 
     def __init__(self) -> None:
         self.__bindings__ = {}
+        self.__instances__ = {}
 
     def bind(
         self, interface: Provider[TProviderValue], impl: Provider[TProviderValue]
@@ -48,7 +50,12 @@ class ProviderRegistry:
 
     def get(self, interface: Provider[TProviderValue]) -> TProviderValue:
         """Get the implementation instance for an interface."""
-        return cast(TProviderValue, self.__bindings__[interface]())
+        try:
+            instance = self.__instances__[interface]
+        except KeyError:
+            instance = self.__bindings__[interface]()
+        self.__instances__[interface] = instance
+        return cast(TProviderValue, instance)
 
     def __getitem__(self, interface: Provider[TProviderValue]) -> TProviderValue:
         """Get the implementation instance for an interface.""" ""

@@ -35,9 +35,11 @@ def test_bind_and_get_with_class(bind_all: None) -> None:
     instance = di.get(DummyInterface)
     assert isinstance(instance, DummyImpl)
     assert instance.foo() == "foo"
+    assert instance == di.registry[DummyInterface]
 
 
 def test_bind_and_get_with_factory(bind_all: None) -> None:
     instance = di.get(OtherDummyInterface)
     assert isinstance(instance, OtherDummyInterface)
     assert instance.bar() == "bar"
+    assert instance == di.registry[OtherDummyInterface]

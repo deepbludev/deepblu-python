@@ -117,9 +117,9 @@ def inject(func: Provider[TProviderValue]) -> Callable[..., TProviderValue]:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> TProviderValue:
         annotations = inspect.getfullargspec(func).annotations
-        for interface, impl in annotations.items():
-            if impl in registry.bindings and interface not in kwargs:
-                kwargs[interface] = registry.bindings[impl]()
+        for name, provider in annotations.items():
+            if provider in registry.bindings and name not in kwargs:
+                kwargs[name] = registry[provider]
         return func(*args, **kwargs)
 
     return wrapper
