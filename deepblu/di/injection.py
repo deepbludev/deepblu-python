@@ -80,7 +80,20 @@ def get(interface: Provider[TProviderValue]) -> TProviderValue:
 
 
 def provide_many(interface: AnyProvider, impls: list[AnyProvider]) -> AnyBinding:
-    """Get a list of providers for a list of interfaces."""
+    """Get a list of providers for a list of interfaces.
+
+    Args:
+        interface: The interface to get the implementation instances for.
+        impls: A list of providers to get the implementation instances for.
+    Returns:
+        A binding of the interface and a list of providers.
+
+    ```py title="Example:" linenums="1"
+    @di.module(providers=[
+        di.provide_many(list[DummyInterface], [DummyImpl, OtherDummyImpl])
+    ])
+    ```
+    """
     return (interface, lambda: [provider() for provider in impls])
 
 
