@@ -7,4 +7,4 @@ Domain-Driven Design (DDD), CQRS, Event Sourcing, Event-driven architectures, me
 """
 
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

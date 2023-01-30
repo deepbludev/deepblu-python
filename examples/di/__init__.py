@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Awaitable, Callable, Generic, TypeVar
+from typing import Any, Awaitable, Callable, Generic, TypeVar
 
 from pydantic import BaseModel
 
@@ -13,11 +13,6 @@ class User:
 
 
 E = TypeVar("E")
-
-
-class CreateUserRequest(BaseModel):
-    id: str
-    name: str
 
 
 class Repo(Generic[E], ABC):
@@ -40,32 +35,54 @@ class UserSQLRepo(Repo[User]):
 
 
 TUseCaseResult = TypeVar("TUseCaseResult")
-TUseCaseRequest = TypeVar("TUseCaseRequest")
+TUseCaseDTO = TypeVar("TUseCaseDTO")
 
 
-class UseCase(Generic[TUseCaseRequest, TUseCaseResult], ABC):
+class UseCase(Generic[TUseCaseDTO, TUseCaseResult], ABC):
     @abstractmethod
-    async def run(self, dto: TUseCaseRequest) -> TUseCaseResult:
+    async def run(self, dto: TUseCaseDTO) -> TUseCaseResult:
         pass
 
 
-class CreateUser(UseCase[CreateUserRequest, User]):
+AnyUseCase = UseCase[Any, Any]
+
+
+class CreateUserDTO(BaseModel):
+    id: str
+    name: str
+
+
+class CreateUser(UseCase[CreateUserDTO, User]):
     @di.inject
     def __init__(self, repo: Repo[User]) -> None:
         self.repo = repo
 
-    async def run(self, dto: CreateUserRequest) -> User:
+    async def run(self, dto: CreateUserDTO) -> User:
         user = User(**dto.dict())
         await self.repo.save(user)
         return user
 
 
-UseCaseFn = Callable[[TUseCaseRequest], Awaitable[TUseCaseResult]]
+class GetUserDTO(BaseModel):
+    id: str
+
+
+class GetUser(UseCase[GetUserDTO, User]):
+    @di.inject
+    def __init__(self, repo: Repo[User]) -> None:
+        self.repo = repo
+
+    async def run(self, dto: GetUserDTO) -> User:
+        user = await self.repo.get(dto.id)
+        return user
+
+
+UseCaseFn = Callable[[TUseCaseDTO], Awaitable[TUseCaseResult]]
 
 
 @di.inject
-def create_user_usecase(repo: Repo[User]) -> UseCaseFn[CreateUserRequest, User]:
-    async def run(dto: CreateUserRequest) -> User:
+def create_user_usecase(repo: Repo[User]) -> UseCaseFn[CreateUserDTO, User]:
+    async def run(dto: CreateUserDTO) -> User:
         user = User(**dto.dict())
         await repo.save(user)
         return user
@@ -79,7 +96,7 @@ class UserService:
         self.repo = repo
         self.create_user_usecase = create_user_usecase
 
-    async def create_user(self, dto: CreateUserRequest) -> User:
+    async def create_user(self, dto: CreateUserDTO) -> User:
         user = await self.create_user_usecase.run(dto)
         await self.repo.save(user)
         return user
@@ -111,3 +128,12 @@ class UserController:
 
     async def save_user(self, user: User) -> None:
         await self.service.save_user(user)
+
+
+# Injecting lists of dependencies
+class CommandBus:
+    usecases: list[AnyUseCase]
+
+    @di.inject
+    def __init__(self, usecases: list[AnyUseCase]) -> None:
+        self.usecases = usecases

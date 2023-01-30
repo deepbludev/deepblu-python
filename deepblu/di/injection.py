@@ -7,13 +7,13 @@ from deepblu.di.registry import (
     AnyProvider,
     Provider,
     ProviderRegistry,
-    TValue,
+    TProviderValue,
 )
 
 registry = ProviderRegistry()
 
 
-def bind(interface: Provider[TValue], impl: Provider[TValue]) -> None:
+def bind(interface: Provider[TProviderValue], impl: Provider[TProviderValue]) -> None:
     """Bind an interface to an implementation.
 
      Args:
@@ -28,7 +28,7 @@ def bind(interface: Provider[TValue], impl: Provider[TValue]) -> None:
     registry[interface] = impl
 
 
-def add(provider: Provider[TValue]) -> None:
+def add(provider: Provider[TProviderValue]) -> None:
     """Add a provider to the registry.
 
     Args:
@@ -62,7 +62,7 @@ def bind_all(*providers: AnyBinding | AnyProvider) -> None:
         bind(interface, impl)
 
 
-def get(interface: Provider[TValue]) -> TValue:
+def get(interface: Provider[TProviderValue]) -> TProviderValue:
     """Get the implementation instance for an interface.
 
     Args:
@@ -79,7 +79,12 @@ def get(interface: Provider[TValue]) -> TValue:
     return registry[interface]
 
 
-def inject(func: Provider[TValue]) -> Callable[..., TValue]:
+def provide_many(interface: AnyProvider, impls: list[AnyProvider]) -> AnyBinding:
+    """Get a list of providers for a list of interfaces."""
+    return (interface, lambda: [provider() for provider in impls])
+
+
+def inject(func: Provider[TProviderValue]) -> Callable[..., TProviderValue]:
     """Decorator to inject dependencies into a function or `__init__` method.
 
     ```py title="Example:" linenums="1"
@@ -97,17 +102,17 @@ def inject(func: Provider[TValue]) -> Callable[..., TValue]:
     """
 
     @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> TValue:
+    def wrapper(*args: Any, **kwargs: Any) -> TProviderValue:
         annotations = inspect.getfullargspec(func).annotations
-        for k, v in annotations.items():
-            if v in registry.bindings and k not in kwargs:
-                kwargs[k] = registry.bindings[v]()
+        for interface, impl in annotations.items():
+            if impl in registry.bindings and interface not in kwargs:
+                kwargs[interface] = registry.bindings[impl]()
         return func(*args, **kwargs)
 
     return wrapper
 
 
-def injectable(cls: Provider[TValue]) -> Provider[TValue]:
+def injectable(cls: Provider[TProviderValue]) -> Provider[TProviderValue]:
     """Inject dependencies into a class `__init__`.
 
     Args:

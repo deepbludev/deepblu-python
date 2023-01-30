@@ -1,9 +1,9 @@
 from typing import Any, Callable, TypeVar, cast
 
-TValue = TypeVar("TValue")
-Provider = Callable[..., TValue]
+TProviderValue = TypeVar("TProviderValue")
+Provider = Callable[..., TProviderValue]
 AnyProvider = Provider[Any]
-Binding = tuple[Provider[TValue], Provider[TValue]]
+Binding = tuple[Provider[TProviderValue], Provider[TProviderValue]]
 AnyBinding = tuple[AnyProvider, AnyProvider]
 
 
@@ -34,23 +34,23 @@ class ProviderRegistry:
         self.__bindings__ = {}
 
     def bind(
-        self, interface: Provider[TValue], impl: Provider[TValue]
+        self, interface: Provider[TProviderValue], impl: Provider[TProviderValue]
     ) -> "ProviderRegistry":
         """Bind an interface to an implementation."""
         self.__bindings__[interface] = impl
         return self
 
     def __setitem__(
-        self, interface: Provider[TValue], impl: Provider[TValue]
+        self, interface: Provider[TProviderValue], impl: Provider[TProviderValue]
     ) -> "ProviderRegistry":
         """Bind an interface to an implementation."""
         return self.bind(interface, impl)
 
-    def get(self, interface: Provider[TValue]) -> TValue:
+    def get(self, interface: Provider[TProviderValue]) -> TProviderValue:
         """Get the implementation instance for an interface."""
-        return cast(TValue, self.__bindings__[interface]())
+        return cast(TProviderValue, self.__bindings__[interface]())
 
-    def __getitem__(self, interface: Provider[TValue]) -> TValue:
+    def __getitem__(self, interface: Provider[TProviderValue]) -> TProviderValue:
         """Get the implementation instance for an interface.""" ""
         return self.get(interface)
 
