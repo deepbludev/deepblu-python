@@ -3,7 +3,7 @@ name = "deepblu"
 packages = [
     { include = "deepblu" },
 ]
-version = "0.1.0"
+version = "0.2.0"
 description = "Library for advanced architectures/patterns in modern Python. Domain-Driven Design (DDD), CQRS, Event Sourcing, Event-driven architectures, message queues, unit of work dependency injection and more."
 authors = ["Carlo Casorzo <carlo@deepblu.dev>"]
 license = "MIT"
@@ -11,7 +11,7 @@ readme = "README.md"
 
 [tool.poe.tasks]
 test   = "pytest"
-'test:cov'   = "pytest --cov=pybase --cov-report=term-missing"
+'test:cov'   = "pytest --cov=deepblu --cov-report=term-missing"
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -32,6 +32,9 @@ mypy = "^0.991"
 mkdocs = "^1.4.2"
 mkdocs-material = "^9.0.6"
 mkdocstrings = {extras = ["python"], version = "^0.20.0"}
+mdx-include = "^1.4.1"
+mkdocs-markdownextradata-plugin = "^0.1.7"
+pyyaml = "^5.3.1"
 
 [build-system]
 requires = ["poetry-core"]

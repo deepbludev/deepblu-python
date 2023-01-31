@@ -1,2 +1,0 @@
-# deepblu
-::: deepblu.di
