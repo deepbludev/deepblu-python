@@ -2,7 +2,7 @@ from typing import Optional
 
 import pytest
 
-from deepblu.result import Result, error, ok
+from deepblu.result import Result, error, monadic, ok
 
 
 @pytest.mark.parametrize("value", ["test", None])
@@ -60,3 +60,14 @@ def test_result_eq(
 def test_is_eq_to_other_result_with_different_value_or_error() -> None:
     assert ok("test") != ok("test2")
     assert error("test") != error("test2")
+
+
+def test_monadic_decorator() -> None:
+    @monadic
+    def capitalize_str(input: str) -> str:
+        if input == "":
+            raise ValueError("Cannot capitalize empty string")
+        return input.capitalize()
+
+    assert capitalize_str("test") == ok("Test")
+    assert capitalize_str("") == error(ValueError("Cannot capitalize empty string"))

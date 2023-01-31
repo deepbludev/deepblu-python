@@ -1,4 +1,15 @@
-from typing import Any, Generic, Optional, Type, TypeAlias, TypeVar, cast
+from functools import wraps
+from typing import (
+    Any,
+    Callable,
+    Generic,
+    Optional,
+    ParamSpec,
+    Type,
+    TypeAlias,
+    TypeVar,
+    cast,
+)
 
 TValue = TypeVar("TValue")
 TError = TypeVar("TError", bound=Exception)
@@ -69,3 +80,17 @@ def ok(value: Optional[TValue] = None) -> Result[TValue, Any]:
 
 def error(error: Optional[TError] | str = None) -> Result[Any, TError | Exception]:
     return Result.err(Exception(error) if isinstance(error, str) else error)
+
+
+P = ParamSpec("P")
+
+
+def monadic(func: Callable[P, TValue]) -> Callable[P, Result[TValue, Any]]:
+    @wraps(func)
+    def decorator(*args: P.args, **kwargs: P.kwargs) -> Result[TValue, Any]:
+        try:
+            return ok(func(*args, **kwargs))
+        except Exception as e:
+            return error(e)
+
+    return decorator
