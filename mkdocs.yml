@@ -44,6 +44,9 @@ nav:
   - Dependency Injection:
     - Basic Usage: di/index.md
     - API Reference: di/api-reference.md
+  - Monadic Results:
+    - Basic Usage: result/index.md
+    - API Reference: result/api-reference.md
 
 markdown_extensions:
 - toc:
