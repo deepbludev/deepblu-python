@@ -13,6 +13,7 @@ def test_result_is_ok_when_value_is_not_none(value: str) -> None:
     assert result.value == value
     assert not result.is_error
     assert result.error is None
+    assert repr(result) == f"Ok({value})"
 
 
 @pytest.mark.parametrize("err", [Exception("test"), None, ValueError("test"), "test"])
@@ -22,6 +23,7 @@ def test_result_is_error_when_value_is_none(err: Optional[Exception | str]) -> N
     assert result.error == err if isinstance(err, Exception) else Exception(err)
     assert not result.is_ok
     assert result.value is None
+    assert repr(result) == f"Error({err})"
 
 
 def test_creates_error_with_exceptions() -> None:
