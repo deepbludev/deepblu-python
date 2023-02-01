@@ -1,5 +1,6 @@
+import inspect
 from functools import wraps
-from typing import Any, Callable, Generic, Optional, ParamSpec, TypeVar, cast
+from typing import Any, Awaitable, Callable, Generic, Optional, ParamSpec, TypeVar, cast
 
 TValue = TypeVar("TValue")
 TError = TypeVar("TError", bound=Exception)
@@ -81,13 +82,17 @@ class Result(Generic[TValue, TError]):
         return cls(value=value, error=None)
 
     @classmethod
-    def err(cls, error: Optional[TError] = None) -> "Result[Any, TError]":
-        """Creates an error result with the given error."""
-        return cls(value=None, is_ok=False, error=error)
+    def err(cls, error: Optional[TError] | str = None) -> "Result[Any, TError]":
+        """Creates an error result with the given error.
+
+        If the error is a string, it will be converted to Exception.
+        """
+        exception = Exception(error) if isinstance(error, str) else error
+        return cls(value=None, is_ok=False, error=cast(TError, exception))
 
 
 def ok(value: Optional[TValue] = None) -> Result[TValue, Any]:
-    """Creates an ok result."""
+    """Creates an ok result with the given value."""
     return Result.ok(value)
 
 
@@ -96,7 +101,7 @@ def error(error: Optional[TError] | str = None) -> Result[Any, TError | Exceptio
 
     If the error is a string, it will be converted to an Exception.
     """
-    return Result.err(Exception(error) if isinstance(error, str) else error)
+    return Result.err(error)
 
 
 # Used for getting the type of kwargs in a monadic function
@@ -113,6 +118,24 @@ def monadic(func: Callable[P, TValue]) -> Callable[P, Result[TValue, Any]]:
     def decorator(*args: P.args, **kwargs: P.kwargs) -> Result[TValue, Any]:
         try:
             return ok(func(*args, **kwargs))
+        except Exception as e:
+            return error(e)
+
+    return decorator
+
+
+def monadic_async(
+    func: Callable[P, Awaitable[TValue]]
+) -> Callable[P, Awaitable[Result[TValue, Any]]]:
+    """Decorator for converting async functions return value to monadic result.
+
+    Converts a function that can raise an exception into a function that returns a Result.
+    """
+
+    @wraps(func)
+    async def decorator(*args: P.args, **kwargs: P.kwargs) -> Result[TValue, Any]:
+        try:
+            return ok(await func(*args, **kwargs))
         except Exception as e:
             return error(e)
 
