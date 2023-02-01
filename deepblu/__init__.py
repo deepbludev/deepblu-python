@@ -36,5 +36,6 @@ __all__ = [
     "Result",
     "error",
     "monadic",
+    "monadic_async",
     "ok",
 ]
