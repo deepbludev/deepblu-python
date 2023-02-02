@@ -32,7 +32,7 @@ class CQRSModule(di.Module):
 
 
 @di.module(
-    submodules=[DummyModule],
+    imports=[DummyModule],
     providers=[
         di.provide_many(list[AnyUseCase], usecases),
         (Repo[User], UserSQLRepo),
@@ -43,7 +43,7 @@ class UserModule(di.Module):
     pass
 
 
-@di.module(submodules=[UserModule, CQRSModule])
+@di.module(imports=[UserModule, CQRSModule])
 class AppModule(di.Module):
     pass
 
@@ -68,8 +68,8 @@ def app_module() -> di.Module:
 def test_user_module(user_module: di.Module) -> None:
     assert len(UserModule.providers) == 3
     assert len(user_module.providers) == 3
-    assert UserModule.submodules == [DummyModule]
-    assert user_module.submodules == [DummyModule]
+    assert UserModule.imports == [DummyModule]
+    assert user_module.imports == [DummyModule]
 
 
 @pytest.mark.asyncio
@@ -78,7 +78,7 @@ async def test_decorator_injects_providers(
 ) -> None:
     commandbus = app_module.get(CommandBus)
     assert len(commandbus.usecases) == 2
-    assert app_module.submodules == [UserModule, CQRSModule]
+    assert app_module.imports == [UserModule, CQRSModule]
 
     commandbus_create_user = cast(CreateUser, commandbus.usecases[0])
     user = await commandbus_create_user.run(CreateUserDTO(id="2", name="Jack"))

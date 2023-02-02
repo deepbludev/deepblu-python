@@ -1,6 +1,5 @@
-import inspect
 from functools import wraps
-from typing import Any, Awaitable, Callable, Generic, Optional, ParamSpec, TypeVar, cast
+from typing import Any, Awaitable, Callable, Generic, ParamSpec, TypeVar, cast
 
 TValue = TypeVar("TValue")
 TError = TypeVar("TError", bound=Exception)
@@ -10,13 +9,11 @@ class Result(Generic[TValue, TError]):
     """Represents a monadic result of a function that can be either ok or error."""
 
     __slots__ = ("__value", "__error", "__is_ok")
-    __value: Optional[TValue]
-    __error: Optional[TError]
+    __value: TValue | None
+    __error: TError | None
     __is_ok: bool
 
-    def __init__(
-        self, value: Optional[TValue], error: Optional[TError], is_ok: bool = True
-    ):
+    def __init__(self, value: TValue | None, error: TError | None, is_ok: bool = True):
         if is_ok and error is not None:
             raise ValueError("Result cannot be both ok and error")
         self.__value = value
@@ -52,7 +49,7 @@ class Result(Generic[TValue, TError]):
         )
 
     @property
-    def value(self) -> Optional[TValue]:
+    def value(self) -> TValue | None:
         """Returns the value of the result.
 
         If the result is an error, it will return None.
@@ -60,7 +57,7 @@ class Result(Generic[TValue, TError]):
         return self.__value
 
     @property
-    def error(self) -> Optional[TError]:
+    def error(self) -> TError | None:
         """Returns the error of the result.
 
         If the result is ok, it will return None."""
@@ -77,12 +74,12 @@ class Result(Generic[TValue, TError]):
         return not self.is_ok
 
     @classmethod
-    def ok(cls, value: Optional[TValue] = None) -> "Result[TValue,Any]":
+    def ok(cls, value: TValue | None = None) -> "Result[TValue,Any]":
         """Creates an ok result with the given value."""
         return cls(value=value, error=None)
 
     @classmethod
-    def err(cls, error: Optional[TError] | str = None) -> "Result[Any, TError]":
+    def err(cls, error: TError | None | str = None) -> "Result[Any, TError]":
         """Creates an error result with the given error.
 
         If the error is a string, it will be converted to Exception.
@@ -91,12 +88,12 @@ class Result(Generic[TValue, TError]):
         return cls(value=None, is_ok=False, error=cast(TError, exception))
 
 
-def ok(value: Optional[TValue] = None) -> Result[TValue, Any]:
+def ok(value: TValue | None = None) -> Result[TValue, Any]:
     """Creates an ok result with the given value."""
     return Result.ok(value)
 
 
-def error(error: Optional[TError] | str = None) -> Result[Any, TError | Exception]:
+def error(error: TError | None | str = None) -> Result[Any, TError | Exception]:
     """Creates an error result.
 
     If the error is a string, it will be converted to an Exception.
@@ -129,7 +126,8 @@ def monadic_async(
 ) -> Callable[P, Awaitable[Result[TValue, Any]]]:
     """Decorator for converting async functions return value to monadic result.
 
-    Converts a function that can raise an exception into a function that returns a Result.
+    Converts a function that can raise an exception into a function that
+    returns a Result.
     """
 
     @wraps(func)
