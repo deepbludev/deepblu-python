@@ -27,7 +27,7 @@ class ProviderRegistry:
     ```
     """
 
-    __slots__ = ["__bindings__", "__instances__"]
+    __slots__ = ("__bindings__", "__instances__")
     __bindings__: dict[AnyProvider, AnyProvider]
     __instances__: dict[AnyProvider, Any]
 

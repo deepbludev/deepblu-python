@@ -2,7 +2,7 @@ from typing import Optional
 
 import pytest
 
-from deepblu.result import Result, error, monadic, ok
+from deepblu.result import Result, error, monadic, monadic_async, ok
 
 
 @pytest.mark.parametrize("value", ["test", None])
@@ -13,6 +13,7 @@ def test_result_is_ok_when_value_is_not_none(value: str) -> None:
     assert result.value == value
     assert not result.is_error
     assert result.error is None
+    assert repr(result) == f"Ok({value})"
 
 
 @pytest.mark.parametrize("err", [Exception("test"), None, ValueError("test"), "test"])
@@ -22,6 +23,7 @@ def test_result_is_error_when_value_is_none(err: Optional[Exception | str]) -> N
     assert result.error == err if isinstance(err, Exception) else Exception(err)
     assert not result.is_ok
     assert result.value is None
+    assert repr(result) == f"Error({err})"
 
 
 def test_creates_error_with_exceptions() -> None:
@@ -86,3 +88,17 @@ def test_monadic_as_decorator() -> None:
 
     assert capitalize_str("test") == ok("Test")
     assert capitalize_str("") == error(ValueError("Cannot capitalize empty string"))
+
+
+@pytest.mark.asyncio
+async def test_monadic_async_as_decorator() -> None:
+    @monadic_async
+    async def capitalize_str(input: str) -> str:
+        if input == "":
+            raise ValueError("Cannot capitalize empty string")
+        return input.capitalize()
+
+    assert await capitalize_str("test") == ok("Test")
+    assert await capitalize_str("") == error(
+        ValueError("Cannot capitalize empty string")
+    )
