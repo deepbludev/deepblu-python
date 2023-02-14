@@ -3,7 +3,7 @@ from typing import cast
 import pytest
 
 from deepblu import di
-from deepblu.di.registry import Provider
+from deepblu.di import Provider
 from examples.di import (
     AnyUseCase,
     CommandBus,
