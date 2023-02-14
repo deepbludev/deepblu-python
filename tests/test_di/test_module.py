@@ -80,6 +80,8 @@ async def test_decorator_injects_providers(
     assert len(commandbus.usecases) == 2
     assert app_module.imports == [UserModule, CQRSModule]
 
+    assert isinstance(app_module.get(Repo[User]), UserSQLRepo)
+
     commandbus_create_user = cast(CreateUser, commandbus.usecases[0])
     user = await commandbus_create_user.run(CreateUserDTO(id="2", name="Jack"))
     assert user.name == "Jack"
