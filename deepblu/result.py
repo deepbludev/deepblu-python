@@ -3,6 +3,7 @@ from typing import Any, Awaitable, Callable, Generic, ParamSpec, TypeVar, cast
 
 TValue = TypeVar("TValue")
 TError = TypeVar("TError", bound=Exception)
+TResult = TypeVar("TResult", bound="Result")
 
 
 class Result(Generic[TValue, TError]):
@@ -74,12 +75,12 @@ class Result(Generic[TValue, TError]):
         return not self.is_ok
 
     @classmethod
-    def ok(cls, value: TValue | None = None) -> "Result[TValue,Any]":
+    def ok(cls: type[TResult], value: TValue | None = None) -> TResult:
         """Creates an ok result with the given value."""
         return cls(value=value, error=None)
 
     @classmethod
-    def err(cls, error: TError | None | str = None) -> "Result[Any, TError]":
+    def err(cls: type[TResult], error: TError | None | str = None) -> TResult:
         """Creates an error result with the given error.
 
         If the error is a string, it will be converted to Exception.
