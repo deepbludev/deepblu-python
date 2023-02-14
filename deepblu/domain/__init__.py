@@ -15,9 +15,54 @@ class ValidationResult(Result[TSchema, ValidationError]):
     ...
 
 
-TValueObject = TypeVar("TValueObject", bound="ValueObject")
 TPrimitive = TypeVar("TPrimitive", bound="Primitive")
-TValue = TypeVar("TValue")
+TPrimitiveValue = TypeVar(
+    "TPrimitiveValue", int, float, bool, str, bytes, None, tuple[Any, ...]
+)
+
+
+class Primitive:
+    """
+    Mixin class for primitive types, in order to enhance custom Pydantic types with some general functionality.
+
+    Primitive types are types that are not composed of other types. They are
+    the most basic types in a programming language. In Python, the primitive
+    types are: int, float, bool, str, bytes, None, and tuple.
+
+    Primitive types are immutable. Once they are created, their attributes
+    cannot be changed. This makes them safe to share between different parts
+    of the application.
+
+    Primitive types are
+    * Compared by value, not by identity.
+    * Serializable. They can be converted to a string
+    * Comparable. They can be compared using the == and !=
+    * Hashable. They can be used as keys in a dictionary.
+    * Immutable. Once they are created, their attributes cannot be changed.
+    This makes them safe to share between different parts of the application.
+
+    """
+
+    @classmethod
+    def parse(cls: type[TPrimitive], value: TPrimitiveValue) -> TPrimitiveValue:
+        """
+        Parses a value in order to check if it is valid without the need of
+        adding it as a field in a Schema/BaseModel.
+        """
+        create_model("Validator", v=(cls, ...))(v=value)
+        return value
+
+    @classmethod
+    def is_valid(cls, value: Any) -> bool:
+        """Parses a value and returns True if it is valid, False otherwise."""
+        try:
+            cls.parse(value)
+        except ValidationError:
+            return False
+        return True
+
+
+TValueObject = TypeVar("TValueObject", bound="ValueObject")
 
 
 class ValueObject(Schema):
@@ -68,28 +113,3 @@ class ValueObject(Schema):
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and self.dict() == other.dict()
-
-
-class Primitive:
-    """Mixin class for primitive types, in order to enhance custom Pydantic types"""
-
-    @classmethod
-    def parse(cls: type[TPrimitive], value: TValue) -> TValue:
-        """
-        Parses a value in order to check if it is valid without the need of
-        adding it as a field in a Schema/BaseModel.
-        """
-        create_model("Validator", v=(cls, ...))(v=value)
-        return value
-
-    @classmethod
-    def is_valid(cls, value: Any) -> bool:
-        """Parses a value and returns True if it is valid, False otherwise."""
-        try:
-            cls.parse(value)
-        except ValidationError:
-            return False
-        return True
-
-
-TPassword = TypeVar("TPassword", bound="Password")
