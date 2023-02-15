@@ -2,7 +2,7 @@ from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError, create_model
 
-from deepblu.result import Result
+from deepblu.result import Result, monadic
 
 TSchema = TypeVar("TSchema", bound="Schema")
 
@@ -23,7 +23,8 @@ TPrimitiveValue = TypeVar(
 
 class Primitive:
     """
-    Mixin class for primitive types, in order to enhance custom Pydantic types with some general functionality.
+    Mixin class for primitive types, in order to enhance custom Pydantic
+    types with some general functionality.
 
     Primitive types are types that are not composed of other types. They are
     the most basic types in a programming language. In Python, the primitive
@@ -51,6 +52,16 @@ class Primitive:
         """
         create_model("Validator", v=(cls, ...))(v=value)
         return value
+
+    @classmethod
+    def monadic_parse(
+        cls: type[TPrimitive], value: TPrimitiveValue
+    ) -> Result[TPrimitiveValue, ValidationError]:
+        """
+        Parses a value in order to check if it is valid without the need of
+        adding it as a field in a Schema/BaseModel.
+        """
+        return monadic(cls.parse)(value)
 
     @classmethod
     def is_valid(cls, value: Any) -> bool:

@@ -3,7 +3,7 @@ from typing import Any, Awaitable, Callable, Generic, ParamSpec, TypeVar, cast
 
 TValue = TypeVar("TValue")
 TError = TypeVar("TError", bound=Exception)
-TResult = TypeVar("TResult", bound="Result")
+TResult = TypeVar("TResult", bound="Result[Any, Any]")
 
 
 class Result(Generic[TValue, TError]):
@@ -33,7 +33,7 @@ class Result(Generic[TValue, TError]):
         is_equal_error = (
             self.error is not None
             and other.error is not None
-            and type(self.error) is type(other.error)
+            and isinstance(self.error, type(other.error))
             and self.error.args == other.error.args
         ) or self.error == other.error
 
@@ -109,7 +109,8 @@ P = ParamSpec("P")
 def monadic(func: Callable[P, TValue]) -> Callable[P, Result[TValue, Any]]:
     """Decorator for monadic functions.
 
-    Converts a function that can raise an exception into a function that returns a Result.
+    Converts a function that can raise an exception into a function
+    that returns a Result.
     """
 
     @wraps(func)
