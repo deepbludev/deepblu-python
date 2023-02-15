@@ -66,11 +66,7 @@ class Primitive:
     @classmethod
     def is_valid(cls, value: Any) -> bool:
         """Parses a value and returns True if it is valid, False otherwise."""
-        try:
-            cls.parse(value)
-        except ValidationError:
-            return False
-        return True
+        return cls.monadic_parse(value).is_ok
 
 
 TValueObject = TypeVar("TValueObject", bound="ValueObject")
