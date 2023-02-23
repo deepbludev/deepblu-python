@@ -51,8 +51,8 @@ class AppModule(di.Module):
 def test_module() -> None:
     dummy_module = DummyModule()
     assert di.Module is not None
-    assert DummyModule.providers == [UserController]
-    assert dummy_module.providers == [UserController]
+    assert DummyModule._providers == [UserController]
+    assert dummy_module._providers == [UserController]
 
 
 @pytest.fixture(scope="module")
@@ -66,10 +66,10 @@ def app_module() -> di.Module:
 
 
 def test_user_module(user_module: di.Module) -> None:
-    assert len(UserModule.providers) == 3
-    assert len(user_module.providers) == 3
-    assert UserModule.imports == [DummyModule]
-    assert user_module.imports == [DummyModule]
+    assert len(UserModule._providers) == 3
+    assert len(user_module._providers) == 3
+    assert UserModule._imports == [DummyModule]
+    assert user_module._imports == [DummyModule]
 
 
 @pytest.mark.asyncio
@@ -78,7 +78,7 @@ async def test_decorator_injects_providers(
 ) -> None:
     commandbus = app_module.get(CommandBus)
     assert len(commandbus.usecases) == 2
-    assert app_module.imports == [UserModule, CQRSModule]
+    assert app_module._imports == [UserModule, CQRSModule]
 
     assert isinstance(app_module.get(Repo[User]), UserSQLRepo)
 

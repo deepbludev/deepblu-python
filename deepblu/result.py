@@ -31,8 +31,8 @@ class Result(Generic[TValue, TError]):
         Equality is checked by comparing the value and the error.
         """
         is_equal_error = (
-            self.error is not None
-            and other.error is not None
+            self.error
+            and other.error
             and isinstance(self.error, type(other.error))
             and self.error.args == other.error.args
         ) or self.error == other.error

@@ -11,23 +11,10 @@ AnyBinding = tuple[AnyProvider, AnyProvider]
 
 
 class ProviderRegistry:
-    """Provider registry for dependency injection.
-
+    """
+    Provider registry for dependency injection.
     Used only as a singleton instance called `registry`, exported by the `di` module.
 
-    ```py title="Example:"
-    from deepblu.di import registry
-
-    registry.bind(Interface, Implementation)
-    registry[OtherInterface] = OtherImplementation
-
-    isinstance(registry[Interface], Implementation) # True
-    isinstance(registry.get(OtherInterface), OtherImplementation) # True
-
-    registry.bindings
-    # {Interface: Implementation, OtherInterface: OtherImplementation}
-
-    ```
     """
 
     __slots__ = ("__bindings__", "__instances__")
@@ -75,30 +62,12 @@ registry = ProviderRegistry()
 
 
 def bind(interface: Provider[TProviderValue], impl: Provider[TProviderValue]) -> None:
-    """Bind an interface to an implementation.
-
-     Args:
-         interface: The interface to bind.
-         impl: The implementation to bind to the given interface.
-
-    ```py title="Example:" linenums="1"
-     di.bind(DummyInterface, DummyImpl)
-     di.bind(OtherDummyInterface, dummy_factory)
-    ```
-    """
+    """Binds an interface to an implementation."""
     registry[interface] = impl
 
 
 def add(provider: Provider[TProviderValue]) -> None:
-    """Add a provider to the registry.
-
-    Args:
-        provider: The provider to add to the registry, bound to itself.
-
-    ```py title="Example:" linenums="1"
-    di.add(DummyImpl)
-    ```
-    """
+    """Add a provider to the registry."""
     bind(provider, provider)
 
 
@@ -124,56 +93,17 @@ def bind_all(*providers: AnyBinding | AnyProvider) -> None:
 
 
 def get(interface: Provider[TProviderValue]) -> TProviderValue:
-    """Get the implementation instance for an interface.
-
-    Args:
-        interface: The interface to get the implementation instance for.
-
-    Returns:
-        The implementation instance for the given interface.
-
-    ```py title="Example:" linenums="1"
-    dummy_instance: DummyInterface = di.get(DummyInterface)
-    other_dummy_instance: OtherDummyInterface = di.get(OtherDummyInterface)
-    ```
-    """
+    """Get the implementation instance for an interface."""
     return registry[interface]
 
 
 def provide_many(interface: AnyProvider, impls: list[AnyProvider]) -> AnyBinding:
-    """Get a list of providers for a list of interfaces.
-
-    Args:
-        interface: The interface to get the implementation instances for.
-        impls: A list of providers to get the implementation instances for.
-    Returns:
-        A binding of the interface and a list of providers.
-
-    ```py title="Example:" linenums="1"
-    @di.module(providers=[
-        di.provide_many(list[DummyInterface], [DummyImpl, OtherDummyImpl])
-    ])
-    ```
-    """
+    """Get a list of providers for a list of interfaces."""
     return (interface, lambda: [provider() for provider in impls])
 
 
 def inject(func: Provider[TProviderValue]) -> Callable[..., TProviderValue]:
-    """Decorator to inject dependencies into a function or `__init__` method.
-
-    ```py title="Example:" linenums="1"
-    class DummyClass:
-        @di.inject
-        def __init__(self, dummy: DummyInterface):
-            self.dummy = dummy
-    ```
-
-    ```py title="Example:" linenums="1"
-    @di.inject
-    def print_dummy(dummy: DummyInterface):
-        print(repr(dummy))
-    ```
-    """
+    """Decorator to inject dependencies into a function or `__init__` method."""
 
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> TProviderValue:
@@ -187,25 +117,7 @@ def inject(func: Provider[TProviderValue]) -> Callable[..., TProviderValue]:
 
 
 def injectable(cls: Provider[TProviderValue]) -> Provider[TProviderValue]:
-    """Inject dependencies into a class `__init__`.
-
-    Args:
-        cls: The class to inject dependencies into.
-
-    ```py title="Example:" linenums="1"
-    @di.injectable
-    class DummyClass:
-        def __init__(self, dummy: DummyInterface):
-            self.dummy = dummy
-    ```
-    ```py title="Example:" linenums="1"
-    class DummyClass:
-        def __init__(self, dummy: DummyInterface):
-            self.dummy = dummy
-
-    di.add(di.injectable(DummyClass)) # avoids decorator syntax
-    ```
-    """
+    """Inject dependencies into a class `__init__`."""
     cls.__init__ = inject(cls.__init__)  # type: ignore
     return cls
 
@@ -225,8 +137,8 @@ class Module(ABC):
     is decorated with the `module` decorator.
     """
 
-    imports: list[type["Module"]]
-    providers: ProviderList
+    _imports: list[type["Module"]]
+    _providers: ProviderList
 
     def get(self, interface: Provider[TProviderValue]) -> TProviderValue:
         """
@@ -248,16 +160,17 @@ def module(
 
     The providers are bound to the di container when the module is imported.
     The submodules are imported when the module is imported, binding their own
-    providers to the di container.  This is useful to organize the providers in
-    a hierarchical way.
+    providers to the di container.
+
+    This is useful to organize the providers in a hierarchical way.
 
     """
 
     def wrapper(cls: type[Module]) -> type[Module]:
-        cls.imports = imports or []
-        cls.providers = providers or []
+        cls._imports = imports or []
+        cls._providers = providers or []
 
-        bind_all(*cls.providers)
+        bind_all(*cls._providers)
         return cls
 
     return wrapper
