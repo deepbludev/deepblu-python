@@ -47,16 +47,16 @@ def test_result_eq(
 ) -> None:
     assert ok() == ok()
     assert ok(value) == ok(value)
-    assert not ok(value) == value
-    assert not ok(value) == ok("other test")
+    assert ok(value) != value
+    assert ok(value) != ok("other test")
 
     assert error() == error()
     assert error(value) == error(value)
     assert error(Exception(value)) == error(Exception(value))
     assert error(Exception(value or "")) == error(value or "")
-    assert not error(Exception(value)) == Exception(value)
-    assert not error(Exception(value)) == error("other test")
-    assert not error(value) == error("other test")
+    assert error(Exception(value)) != Exception(value)
+    assert error(Exception(value)) != error("other test")
+    assert error(value) != error("other test")
 
 
 def test_is_eq_to_other_result_with_different_value_or_error() -> None:
@@ -66,7 +66,7 @@ def test_is_eq_to_other_result_with_different_value_or_error() -> None:
 
 def test_monadic_as_hof() -> None:
     def lowercase_str(input: str) -> str:
-        if input == "":
+        if not input:
             raise ValueError("Cannot lowercase empty string")
         return input.lower()
 
@@ -82,7 +82,7 @@ def test_monadic_as_hof() -> None:
 def test_monadic_as_decorator() -> None:
     @monadic
     def capitalize_str(input: str) -> str:
-        if input == "":
+        if not input:
             raise ValueError("Cannot capitalize empty string")
         return input.capitalize()
 
@@ -94,7 +94,7 @@ def test_monadic_as_decorator() -> None:
 async def test_monadic_async_as_decorator() -> None:
     @monadic_async
     async def capitalize_str(input: str) -> str:
-        if input == "":
+        if not input:
             raise ValueError("Cannot capitalize empty string")
         return input.capitalize()
 
