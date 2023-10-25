@@ -31,7 +31,6 @@ class UserSQLRepo(Repo[User]):
 
     async def save(self, entity: User) -> None:
         print(f"Saving user {entity.id} to SQL")
-        pass
 
 
 TUseCaseResult = TypeVar("TUseCaseResult")
@@ -73,8 +72,7 @@ class GetUser(UseCase[GetUserDTO, User]):
         self.repo = repo
 
     async def run(self, dto: GetUserDTO) -> User:
-        user = await self.repo.get(dto.id)
-        return user
+        return await self.repo.get(dto.id)
 
 
 UseCaseFn = Callable[[TUseCaseDTO], Awaitable[TUseCaseResult]]
